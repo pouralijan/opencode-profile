@@ -105,7 +105,7 @@ Names must contain 1–64 ASCII letters, digits, hyphens, or underscores and sta
 ```sh
 opencode-profile run hp
 opencode-profile run hp -- auth list
-opencode-profile run hp -- models --refresh
+opencode-profile run hp -- models
 opencode-profile run hp -- run --model example/model "hello world"
 opencode-profile run hp -- debug paths db
 ```
@@ -145,7 +145,7 @@ Install the launcher to a stable location first, such as with `cargo install --l
 
 ```sh
 opencode-profile service hp autostart enable   # Enable and start now
-opencode-profile service arman autostart enable
+opencode-profile service work autostart enable
 opencode-profile services
 opencode-profile service hp autostart status
 opencode-profile service hp autostart disable  # Leave the running service alone

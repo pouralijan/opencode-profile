@@ -286,7 +286,7 @@ printf 'diagnostic\n' >&2
 exit 23
 "#).unwrap();
 
-    for name in ["hp", "arman"] {
+    for name in ["hp", "work"] {
         assert!(invoke(home, &["create", name]).status.success());
         let shell_command = format!(
             "sh '{}' 'hello world' '--standalone' '--server=example'",
@@ -402,15 +402,15 @@ fn create_validation_and_clone_excludes_secrets_and_data() {
         r#"{"theme":"dark","model":"example/model","provider":{"secret":"private"},"other":"secret"}"#).unwrap();
     fs::write(config(home, "hp").join("auth.json"), "private").unwrap();
     fs::write(data(home, "hp").join("credential.txt"), "private").unwrap();
-    assert!(invoke(home, &["clone", "hp", "arman"]).status.success());
-    let cloned = fs::read_to_string(config(home, "arman").join("opencode.json")).unwrap();
+    assert!(invoke(home, &["clone", "hp", "work"]).status.success());
+    let cloned = fs::read_to_string(config(home, "work").join("opencode.json")).unwrap();
     assert!(cloned.contains("dark") && cloned.contains("example/model"));
     assert!(!cloned.contains("secret") && !cloned.contains("provider"));
-    assert!(!config(home, "arman").join("auth.json").exists());
-    assert!(!data(home, "arman").join("credential.txt").exists());
-    assert!(!invoke(home, &["remove", "arman"]).status.success());
-    assert!(invoke(home, &["remove", "arman", "--yes"]).status.success());
-    assert!(!config(home, "arman").exists());
+    assert!(!config(home, "work").join("auth.json").exists());
+    assert!(!data(home, "work").join("credential.txt").exists());
+    assert!(!invoke(home, &["remove", "work"]).status.success());
+    assert!(invoke(home, &["remove", "work", "--yes"]).status.success());
+    assert!(!config(home, "work").exists());
     assert!(config(home, "hp").exists());
 }
 
@@ -437,7 +437,7 @@ fn legacy_roots_are_not_discovered_or_modified() {
 fn run_isolates_profiles_and_forwards_arguments_and_exit_code() {
     let dir = TempDir::new().unwrap();
     let home = dir.path();
-    for name in ["hp", "arman"] {
+    for name in ["hp", "work"] {
         assert!(invoke(home, &["create", name]).status.success());
     }
     let path = install_fake_opencode(home);
@@ -451,7 +451,7 @@ fn run_isolates_profiles_and_forwards_arguments_and_exit_code() {
         ),
     ];
     let mut outputs = Vec::new();
-    for name in ["hp", "arman"] {
+    for name in ["hp", "work"] {
         for (route, expected) in routes {
             let output = Command::new(env!("CARGO_BIN_EXE_opencode-profile"))
                 .args(["run", name, "--"])
@@ -534,7 +534,7 @@ fn persistent_services_reuse_are_separate_and_have_lifecycle_controls() {
     let dir = TempDir::new().unwrap();
     let home = dir.path();
     let path = install_fake_opencode(home);
-    for name in ["hp", "arman"] {
+    for name in ["hp", "work"] {
         assert!(invoke(home, &["create", name]).status.success());
         assert!(fake_command(home, &path, &["service", name, "status"])
             .output()
@@ -574,7 +574,7 @@ fn persistent_services_reuse_are_separate_and_have_lifecycle_controls() {
     };
     assert_ne!(
         read_registration("hp")["url"],
-        read_registration("arman")["url"]
+        read_registration("work")["url"]
     );
     assert!(fake_command(home, &path, &["service", "hp", "restart"])
         .output()
@@ -595,7 +595,7 @@ fn persistent_services_reuse_are_separate_and_have_lifecycle_controls() {
             .success());
     }
     assert!(!state(home, "hp").join("opencode/service.json").exists());
-    assert!(state(home, "arman").join("opencode/service.json").exists());
+    assert!(state(home, "work").join("opencode/service.json").exists());
 }
 
 #[cfg(unix)]
@@ -945,7 +945,7 @@ fn services_lists_runtime_and_autostart_without_starting_profiles() {
     let home = dir.path();
     let path = install_fake_opencode(home);
     install_fake_systemctl(home);
-    for name in ["hp", "arman"] {
+    for name in ["hp", "work"] {
         assert!(invoke(home, &["create", name]).status.success());
     }
     let stopped = fake_command(home, &path, &["services"]).output().unwrap();
@@ -957,12 +957,12 @@ fn services_lists_runtime_and_autostart_without_starting_profiles() {
     );
     assert!(
         text.contains("hp")
-            && text.contains("arman")
+            && text.contains("work")
             && text.contains("stopped")
             && text.contains("disabled"),
         "{text}"
     );
-    for name in ["hp", "arman"] {
+    for name in ["hp", "work"] {
         assert!(!state(home, name).join("fake-calls").exists());
     }
     assert!(fake_command(home, &path, &["service", "hp", "start"])
@@ -981,10 +981,10 @@ fn services_lists_runtime_and_autostart_without_starting_profiles() {
     assert!(live.status.success());
     let text = String::from_utf8(live.stdout).unwrap();
     let hp = text.lines().find(|line| line.contains("hp")).unwrap();
-    let arman = text.lines().find(|line| line.contains("arman")).unwrap();
+    let work = text.lines().find(|line| line.contains("work")).unwrap();
     assert!(hp.contains("running") && hp.contains("enabled"), "{text}");
     assert!(
-        arman.contains("stopped") && arman.contains("disabled"),
+        work.contains("stopped") && work.contains("disabled"),
         "{text}"
     );
     assert!(!text.contains('\x1b'));
